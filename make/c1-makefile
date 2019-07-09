@@ -1,23 +1,49 @@
 # Template for one-bin C programs.
 include config.mk
-SRC     = $(wildcard ./src/*.c)
-OBJ     = $(SRCS:.c=.o)
+SRC     = $(wildcard *.c) $(ASRC)
+HDR     = $(wildcard *.h) $(AHDR)
+OBJ     = $(SRC:.c=.o)
+	DIR    = $(DESTDIR)$(PREFIX)
 
-.PHONY: all clean install uninstall
+.PHONY: all clean install uninstall info
 
-all:$(TARGET)
+all:options $(TARGET)
+options:
+	@echo "'$(TARGET)' build options:"
+	@echo "CFLAGS   = '${CFLAGS}';"
+	@echo "LDFLAGS  = '${LDFLAGS}';"
+	@echo "CC       = '${CC}';"
+	@echo "LD       = '${LD}';"
+resources:
+	@echo "'$(TARGET)' resources:"
+	@echo "SRC      = '${SRC}';"
+	@echo "HDR      = '${HDR}'"
+	@echo "OBJ      = '${OBJ}';"
+paths:
+	@echo "'$(TARGET) install paths:'"
+	@echo "DESTDIR  = '${DESTDIR}';"
+	@echo "PREFIX   = '${PREFIX}';"
+	@echo "DIR      = '${DIR}';"
+	@echo "Current installation path will be '$(DIR)/bin/${TARGET}'."
 
-$(TARGET): $(OBJS)
-	$(CC) -o bin/$(TARGET) $(OBJS) $(CFLAGS)
+info:resources options paths
 
-.c.o:
-	$(CC) $(CFLAGS)	-c $< -o $@
 
-clean:
-	rm -rf $(TARGET) $(OBJS)
+$(TARGET):$(OBJ)
+	@echo "($(TARGET))"
+	$(CC) -o $(TARGET) $(OBJ) $(CFLAGS)
 
-install:
-	sudo install bin/$(TARGET) $(PREFIX)
+.c.o: $(SRC)
+	@echo [$@]
+	$(CC) -o $@ $(CFLAGS) -c $<
+
+$(SRC):$(HDR)
+
+clean:resources
+	rm -rf $(TARGET) $(OBJ)
+
+install: paths $(TARGET)
+	install $(TARGET) $(DIR)/bin/
 
 uninstall:
-	rm -rf $(PREFIX)/$(TARGET)
+	rm -rf $(DIR)/bin/$(TARGET)

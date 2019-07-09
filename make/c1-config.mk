@@ -1,23 +1,28 @@
 # Program name.
 TARGET  =
 # Version
-VERSION =
+#VERSION =
+# Your additional sources.
+#ASRC    =
+# Your addition headers.
+#AHDR    =
 
 # Customize below to fit your system and program.
-
+#
 # Paths.
-PREFIX    =
-MANPREFIX = ${PREFIX}/share/man
+#DESTDIR   =
+#PREFIX    =
+#MANPREFIX = ${PREFIX}/share/man
 
 # Includes.
-INC =
+#INC =
 # Dynamic libraries.
-LIB =
+#LIB =
 
 # Compilation Flags.
-CFLAGS   =
-LDFLAGS  = ${LIBS}
+#CFLAGS   =
+#LDFLAGS  = ${LIBS}
 
 # Compiler and linker.
-CC =
-LD = $(CC)
+#CC =
+#LD = $(CC)
