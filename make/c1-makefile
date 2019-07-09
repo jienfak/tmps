@@ -1,4 +1,4 @@
-# Template for simple C programs.
+# Template for one-bin C programs.
 include config.mk
 SRC     = $(wildcard ./src/*.c)
 OBJ     = $(SRCS:.c=.o)
