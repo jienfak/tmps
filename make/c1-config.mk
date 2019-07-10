@@ -1,28 +1,39 @@
+# Includable for c1-like makefiles.
+VERSION = 0.1
+# Resources.
+TARGET  = 
+SRC     = $(wildcard *.c) $(ASRC)
+HDR     = $(wildcard *.h) $(AHDR)
+OBJ     = $(SRC:.c=.o)
+TARDIR  = $(TARGET)-$(VERSION)
+TAR     = $(TARDIR).tar
+# Directories.
+ROOTDIR   = 
+DIRPREFIX = usr/local
+MANPREFIX = share/man
+MAN1PREFIX= man1
+BINPREFIX = bin
+DESTDIR = $(ROOTDIR)/$(DIRPREFIX)
 # Program name.
-TARGET  =
-# Version
-#VERSION =
-# Your additional sources.
-#ASRC    =
-# Your addition headers.
-#AHDR    =
-
-# Customize below to fit your system and program.
-#
-# Paths.
-#DESTDIR   =
-#PREFIX    =
-#MANPREFIX = ${PREFIX}/share/man
-
+# Additional sources.
+ASRC =
+# Additional headers.
+AHDR =
 # Includes.
-#INC =
-# Dynamic libraries.
-#LIB =
-
+INC =
+# Dynamic/static libraries.
+LIB =
+# Defines to get from C-preprocessor.
+DEFINE   = -DVERSION=\"$(VERSION)\"
+# Warnings.
+WARN     =
+# Optimiziation flags.
+OPTF     = -O3
 # Compilation Flags.
-#CFLAGS   =
-#LDFLAGS  = ${LIBS}
+DBGFLAGS = $(INC) -O0     -Wall   $(DEFINE) -g
+CFLAGS   = $(INC) $(OPTF) $(WARN) $(DEFINE)
+LDFLAGS  = $(LIBS)
 
 # Compiler and linker.
-#CC =
-#LD = $(CC)
+CC = tcc
+LD = $(CC)

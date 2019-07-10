@@ -1,49 +1,78 @@
-# Template for one-bin C programs.
+# Makefile for one-bin C programs.
 include config.mk
-SRC     = $(wildcard *.c) $(ASRC)
-HDR     = $(wildcard *.h) $(AHDR)
-OBJ     = $(SRC:.c=.o)
-	DIR    = $(DESTDIR)$(PREFIX)
+INFO = options artifacts paths
 
 .PHONY: all clean install uninstall info
+all : options strip
 
-all:options $(TARGET)
-options:
-	@echo "'$(TARGET)' build options:"
-	@echo "CFLAGS   = '${CFLAGS}';"
-	@echo "LDFLAGS  = '${LDFLAGS}';"
-	@echo "CC       = '${CC}';"
-	@echo "LD       = '${LD}';"
-resources:
-	@echo "'$(TARGET)' resources:"
-	@echo "SRC      = '${SRC}';"
-	@echo "HDR      = '${HDR}'"
-	@echo "OBJ      = '${OBJ}';"
-paths:
-	@echo "'$(TARGET) install paths:'"
-	@echo "DESTDIR  = '${DESTDIR}';"
-	@echo "PREFIX   = '${PREFIX}';"
-	@echo "DIR      = '${DIR}';"
-	@echo "Current installation path will be '$(DIR)/bin/${TARGET}'."
+dbg : dbgflags info $(TARGET)
+	$(LD) -o $(TARGET) $(LDFLAGS) $(OBJ)
 
-info:resources options paths
+dbgflags :
+	$(eval CFLAGS = $(DBGFLAGS))
+
+options :
+	@echo "'$(TARGET)' '$@':"
+	@echo "CFLAGS   = '$(CFLAGS)' ;"
+	@echo "LDFLAGS  = '$(LDFLAGS)' ;"
+	@echo "CC       = '$(CC)' ;"
+	@echo "LD       = '$(LD)' ;"
+
+artifacts :
+	@echo "'$(TARGET)' '$@':"
+	@echo "SRC      = '$(SRC)' ;"
+	@echo "HDR      = '$(HDR)' ;"
+	@echo "OBJ      = '$(OBJ)' ;"
+	@echo "TARDIR   = '$(TARDIR);'"
+	@echo "TAR      = '$(TAR)' "
+
+paths :
+	@echo "'$(TARGET)' '$@':"
+	@echo "ROOTDIR  = '$(ROOTDIR)';"
+	@echo "DIRPREFIX= '$(DIRPREFIX)';"
+	@echo "MANPREFIX= '$(MANPREFIX)'"
+	@echo "DESTDIR  = '$(DESTDIR)';"
+
+info : $(INFO)
 
 
-$(TARGET):$(OBJ)
-	@echo "($(TARGET))"
-	$(CC) -o $(TARGET) $(OBJ) $(CFLAGS)
+$(TARGET) : $(OBJ)
+	@echo "[$@]"
+	$(LD) -o $@ $(OBJ) $(CFLAGS)
 
-.c.o: $(SRC)
-	@echo [$@]
+strip : $(TARGET)
+	strip -v $<
+
+.c.o : $(SRC)
+	@echo "[$@]"
 	$(CC) -o $@ $(CFLAGS) -c $<
 
-$(SRC):$(HDR)
+$(SRC) : $(HDR)
 
-clean:resources
-	rm -rf $(TARGET) $(OBJ)
+clean: artifacts distclean resclean
 
-install: paths $(TARGET)
-	install $(TARGET) $(DIR)/bin/
+distclean :
+	rm -vrf $(TAR) $(TARDIR) $(TAR).gz
 
-uninstall:
-	rm -rf $(DIR)/bin/$(TARGET)
+resclean :
+	rm -vrf $(OBJ) $(TARGET)
+
+dist : $(TAR).gz
+
+$(TAR).gz : $(TAR)
+	gzip $(TAR)
+
+$(TAR) : $(TARDIR)
+	tar -vcf $(TAR) $(TARDIR)
+
+$(TARDIR) : resclean
+	mkdir -pv $(TARDIR)
+	cp -vR $(wildcard *) $(TARDIR)
+
+install : paths $(TARGET)
+	install $(TARGET) $(DESTDIR)/$(BINPREFIX)/
+	sed "s/VERSION/$(VERSION)/g" <$(TARGET).1>$(DESTDIR)/$(MANPREFIX)/$(MAN1PREFIX)/$(TARGET).1
+
+uninstall :
+	rm -vrf $(DESTDIR)/$(BINPREFIX)/$(TARGET)
+	rm -vrf $(DESTDIR)/$(MANPREFIX)/$(MAN1PREFIX)/$(TARGET).1
