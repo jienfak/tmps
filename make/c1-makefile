@@ -1,78 +1,85 @@
 # Makefile for one-bin C programs.
+.PHONY: all dbg clean install uninstall show_info  \
+            show_options show_artifacts show_paths
 include config.mk
-INFO = options artifacts paths
+SHOW_INFO = show_options show_artifacts show_paths
+CLEAN     = clean_dist clean_artifacts
 
-.PHONY: all clean install uninstall info
-all : options strip
 
-dbg : dbgflags info $(TARGET)
-	$(LD) -o $(TARGET) $(LDFLAGS) $(OBJ)
+.SILENT: install uninstall clean $(CLEAN)
 
-dbgflags :
+all : show_options strip
+
+dbg : set_dbgflags show_info $(TGT)
+	$(LD) -o $(TGT) $(LDFLAGS) $(OBJ)
+
+set_dbgflags :
 	$(eval CFLAGS = $(DBGFLAGS))
 
-options :
-	@echo "'$(TARGET)' '$@':"
+show_options :
+	@echo "'$(TGT)' '$@':"
 	@echo "CFLAGS   = '$(CFLAGS)' ;"
 	@echo "LDFLAGS  = '$(LDFLAGS)' ;"
 	@echo "CC       = '$(CC)' ;"
 	@echo "LD       = '$(LD)' ;"
 
-artifacts :
-	@echo "'$(TARGET)' '$@':"
+show_artifacts :
+	@echo "'$(TGT)' '$@' :"
 	@echo "SRC      = '$(SRC)' ;"
 	@echo "HDR      = '$(HDR)' ;"
 	@echo "OBJ      = '$(OBJ)' ;"
 	@echo "TARDIR   = '$(TARDIR);'"
-	@echo "TAR      = '$(TAR)' "
+	@echo "TARARC   = '$(TARARC)'. "
 
-paths :
-	@echo "'$(TARGET)' '$@':"
-	@echo "ROOTDIR  = '$(ROOTDIR)';"
-	@echo "DIRPREFIX= '$(DIRPREFIX)';"
-	@echo "MANPREFIX= '$(MANPREFIX)'"
-	@echo "DESTDIR  = '$(DESTDIR)';"
+show_paths :
+	@echo "'$(TGT)' '$@' :"
+	@echo "ROOTDIR  = '$(ROOTDIR)' ;"
+	@echo "DIRPREFIX= '$(DIRPREFIX)' ;"
+	@echo "MANPREFIX= '$(MANPREFIX)' ;"
+	@echo "DESTDIR  = '$(DESTDIR)' ."
 
-info : $(INFO)
+show_info : $(SHOW_INFO)
 
 
-$(TARGET) : $(OBJ)
+$(TGT) : $(OBJ)
 	@echo "[$@]"
 	$(LD) -o $@ $(OBJ) $(CFLAGS)
 
-strip : $(TARGET)
+$(MANUAL) :
+
+strip : $(TGT)
 	strip -v $<
 
-.c.o : $(SRC)
+%.o : %.c
 	@echo "[$@]"
 	$(CC) -o $@ $(CFLAGS) -c $<
 
 $(SRC) : $(HDR)
 
-clean: artifacts distclean resclean
+clean: $(CLEAN)
 
-distclean :
-	rm -vrf $(TAR) $(TARDIR) $(TAR).gz
+clean_dist :
+	rm -vrf $(TARDIR) $(TARARC) $(TAROUT)
 
-resclean :
-	rm -vrf $(OBJ) $(TARGET)
+clean_artifacts :
+	rm -vrf $(OBJ) $(TGT)
 
-dist : $(TAR).gz
+dist :  $(TAROUT)
 
-$(TAR).gz : $(TAR)
-	gzip $(TAR)
+$(TAROUT) : clean $(TARARC)
+	gzip -f $(TARARC)
 
-$(TAR) : $(TARDIR)
-	tar -vcf $(TAR) $(TARDIR)
+$(TARARC) : $(TARDIR)
+	tar -vcf $(TARARC) $(TARDIR)
 
-$(TARDIR) : resclean
+$(TARDIR) : $(DISTFILES)
 	mkdir -pv $(TARDIR)
-	cp -vR $(wildcard *) $(TARDIR)
+	cp -vR $(subst $(TARDIR),,$(wildcard *)) $(TARDIR)
 
-install : paths $(TARGET)
-	install $(TARGET) $(DESTDIR)/$(BINPREFIX)/
-	sed "s/VERSION/$(VERSION)/g" <$(TARGET).1>$(DESTDIR)/$(MANPREFIX)/$(MAN1PREFIX)/$(TARGET).1
+install : $(TGT) $(MANUAL)
+	install -v $(TGT) $(DESTDIR)/$(BINPREFIX)/
+	sed "s/VERSION/$(VERSION)/g" <$(MANUAL)>$(DESTDIR)/$(MANPREFIX)/$(MANSECTPREFIX)/$(MANUAL)
 
 uninstall :
-	rm -vrf $(DESTDIR)/$(BINPREFIX)/$(TARGET)
-	rm -vrf $(DESTDIR)/$(MANPREFIX)/$(MAN1PREFIX)/$(TARGET).1
+	rm -vrf $(DESTDIR)/$(BINPREFIX)/$(TGT)
+	rm -vrf $(DESTDIR)/$(MANPREFIX)/$(MANSECTPREFIX)/$(MANUAL)
