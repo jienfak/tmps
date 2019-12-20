@@ -1,4 +1,4 @@
-# Makefile for one-bin C programs.
+# Makefile for Irrlicht  programs. Isn't supposed to be edited.
 .PHONY: all dbg clean install uninstall show_info  \
             show_options show_artifacts show_paths
 
@@ -6,7 +6,7 @@ include config.mk
 include os.mk
 include $(OS).mk
 SHOW_INFO = show_options show_artifacts show_paths
-CLEAN     = clean_artifacts clean_dist 
+CLEAN     = clean_dist clean_artifacts
 .SILENT: install uninstall clean $(CLEAN)
 
 
@@ -16,14 +16,14 @@ dbg : set_dbgflags show_info $(CLEAN) $(TGT)
 	$(LD) $(OUTFLAG) $(TGT) $(LDFLAGS) $(OBJ)
 
 set_dbgflags :
-	$(eval CFLAGS = $(DBGFLAGS))
+	$(eval CXXFLAGS = $(DBGFLAGS))
 
 show_options :
 	@$(ECHO) "'$(TGT)' '$@':"
 	@$(ECHO) "OS       =  '$(OS)' ;"
-	@$(ECHO) "CFLAGS   = '$(CFLAGS)' ;"
+	@$(ECHO) "CXXFLAGS   = '$(CXXFLAGS)' ;"
 	@$(ECHO) "LDFLAGS  = '$(LDFLAGS)' ;"
-	@$(ECHO) "CC       = '$(CC)' ;"
+	@$(ECHO) "CXX       = '$(CXX)' ;"
 	@$(ECHO) "LD       = '$(LD)' ;"
 
 show_artifacts :
@@ -46,15 +46,16 @@ show_info : $(SHOW_INFO)
 
 $(TGT) : $(OBJ)
 	@$(ECHO) "[$@]"
-	$(LD) $(OUTFLAG) $@ $(LDFLAGS)  $(OBJ)
+	$(LD) $(LDFLAGS) $(OUTFLAG) $@ $(OBJ)
 
 $(MANUAL) :
+
 strip :
 	$(STRIP) $(TGT)
 
-%$(OBJEXT) : %$(CEXT)
+%$(OBJEXT) : %$(CXXEXT)
 	@$(ECHO) "[$@]"
-	$(CC) $(OUTFLAG) $@ $(CFLAGS) $(OBJFLAG) $<
+	$(CXX) $(OUTFLAG) $@ $(CXXFLAGS) $(OBJFLAG) $<
 
 $(SRC) : $(HDR)
 
